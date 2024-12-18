@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação de Presença - Festa de Confraternização</title>
+    <style>
+        /* Estilo Geral */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #004d26; /* Cor de fundo inspirada no convite */
+            margin: 0;
+            color: #fff;
+            text-align: center;
+        }
+        header {
+            padding: 20px 0;
+        }
+        h1 {
+            color: #ffc107; /* Dourado */
+            font-size: 2.5em;
+            margin: 0;
+        }
+        p {
+            margin: 10px auto 30px;
+            font-size: 1.2em;
+        }
+        
+        /* Formulário */
+        form {
+            background-color: #fff;
+            color: #000;
+            width: 90%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: left;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #004d26;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #006837;
+        }
+
+        /* Mensagem de Confirmação */
+        #confirmacao {
+            display: none;
+            margin-top: 20px;
+            color: #ffc107;
+            font-size: 1.5em;
+        }
+
+        /* Rodapé */
+        footer {
+            margin-top: 30px;
+            padding: 10px 0;
+        }
+
+        /* Área Administrativa */
+        #adminArea {
+            display: none;
+            background-color: #fff;
+            color: #000;
+            padding: 20px;
+            margin: 30px auto;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #adminArea h2 {
+            margin-top: 0;
+        }
+        #adminTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        #adminTable th, #adminTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #adminTable th {
+            background-color: #004d26;
+            color: #fff;
+        }
+
+        #resumoPresencas {
+            margin-top: 20px;
+            text-align: left;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Festa de Confraternização</h1>
+        <p>Confirme sua presença e comemore conosco as vitórias de 2024!</p>
+    </header>
+
+    <!-- Formulário de Confirmação -->
+    <form id="formPresenca" onsubmit="return confirmarPresenca(event)">
+        <label for="nome">Nome do Colaborador:</label>
+        <input type="text" id="nome" name="nome" placeholder="Digite seu nome completo" required>
+
+        <label for="empresa">Selecione a Empresa:</label>
+        <select id="empresa" name="empresa" required>
+            <option value="">-- Escolha uma empresa --</option>
+            <option value="Garden Sacoman">Garden Sacoman</option>
+            <option value="Pamunã">Pamunã</option>
+            <option value="Sacoman e Sanches">Sacoman e Sanches</option>
+            <option value="Viveiro Tamboril">Viveiro Tamboril</option>
+            <option value="Fazenda Sacoman">Fazenda Sacoman</option>
+        </select>
+
+        <label for="adultos">Quantidade de Acompanhantes (Adultos):</label>
+        <input type="number" id="adultos" name="adultos" min="0" value="0" required>
+
+        <label for="criancas">Quantidade de Acompanhantes (Crianças):</label>
+        <input type="number" id="criancas" name="criancas" min="0" value="0" required>
+
+        <button type="submit">Confirmar Presença</button>
+
+        <div id="confirmacao">Confirmação realizada com sucesso!</div>
+    </form>
+
+    <!-- Acesso Administrativo -->
+    <section>
+        <h2>Administração</h2>
+        <form onsubmit="return validarSenha(event)">
+            <label for="senha">Digite a senha de administrador:</label>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit">Acessar</button>
+        </form>
+        <div id="adminArea">
+            <h2>Lista de Presenças Confirmadas</h2>
+            <table id="adminTable">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Empresa</th>
+                        <th>Adultos</th>
+                        <th>Crianças</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaPresencas">
+                    <!-- Os dados serão preenchidos aqui -->
+                </tbody>
+            </table>
+            <div id="resumoPresencas"></div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Festa de Confraternização | Grupo Sacoman</p>
+    </footer>
+
+    <script>
+        // Carregar as confirmações do LocalStorage
+        const listaPresencas = JSON.parse(localStorage.getItem('confirmacoes')) || [];
+
+        function confirmarPresenca(event) {
+            event.preventDefault();
+            const nome = document.getElementById('nome').value;
+            const empresa = document.getElementById('empresa').value;
+            const adultos = parseInt(document.getElementById('adultos').value) || 0;
+            const criancas = parseInt(document.getElementById('criancas').value) || 0;
+
+            // Salva os dados na lista
+            listaPresencas.push({ nome, empresa, adultos, criancas });
+
+            // Salva os dados no LocalStorage
+            localStorage.setItem('confirmacoes', JSON.stringify(listaPresencas));
+
+            // Exibe mensagem de confirmação
+            document.getElementById('confirmacao').style.display = 'block';
+            document.getElementById('formPresenca').reset();
+        }
+
+        function validarSenha(event) {
+            event.preventDefault();
+            const senha = document.getElementById('senha').value;
+            if (senha === 'ADM4') {
+                document.getElementById('adminArea').style.display = 'block';
+                carregarListaPresencas();
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+
+        function carregarListaPresencas() {
+            const tabela = document.getElementById('tabelaPresencas');
+            tabela.innerHTML = '';
+            let resumo = {};
+            let totalAdultos = 0, totalCriancas = 0;
+
+            listaPresencas.forEach((p) => {
+                const row = `<tr>
+                    <td>${p.nome}</td>
+                    <td>${p.empresa}</td>
+                    <td>${p.adultos}</td>
+                    <td>${p.criancas}</td>
+                </tr>`;
+                tabela.innerHTML += row;
+
+                // Contagem para o resumo
+                resumo[p.empresa] = resumo[p.empresa] || { adultos: 0, criancas: 0, colaboradores: 0 };
+                resumo[p.empresa].adultos += p.adultos;
+                resumo[p.empresa].criancas += p.criancas;
+                resumo[p.empresa].colaboradores++;
+
+                totalAdultos += p.adultos;
+                totalCriancas += p.criancas;
+            });
+
+            let resumoHTML = `<h3>Resumo Geral</h3>`;
+            for (const empresa in resumo) {
+                resumoHTML += `<p>${empresa}: ${resumo[empresa].colaboradores} colaboradores, ${resumo[empresa].adultos} adultos, ${resumo[empresa].criancas} crianças.</p>`;
+            }
+            resumoHTML += `<p>Total: ${totalAdultos} adultos e ${totalCriancas} crianças.</p>`;
+            document.getElementById('resumoPresencas').innerHTML = resumoHTML;
+        }
+
+        // Carregar a lista de presenças automaticamente ao carregar a página
+        window.onload = carregarListaPresencas;
+    </script>
+</body>
+</html>
